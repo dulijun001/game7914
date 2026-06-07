@@ -141,8 +141,8 @@
         for (let col = 0; col < cols; col++) {
           const t = colors[(col + 2 * row) % 4]; // 四色: 上下左右及对角都不同种
           const r = TIERS[t].r;
-          const x = b.x + cw * (col + 0.5) + (Math.random() - 0.5) * cw * 0.3;
-          const y = b.y + b.h - r - row * sy - 2 + (Math.random() - 0.5) * 6;
+          const x = b.x + cw * (col + 0.5);
+          const y = b.y + b.h - r - row * sy - 2;
           const body = new Body(clamp(x, b.x + r, b.x + b.w - r), y, r, t);
           body.scale = 1; body.fresh = 0;
           this.world.add(body);
