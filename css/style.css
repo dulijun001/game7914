@@ -72,10 +72,17 @@ html, body {
 }
 .order-card2 {
   position: relative; width: 92px;
-  background: linear-gradient(#fff7e6,#f6e7c4);
-  border: 2px solid #e0b063; border-radius: 14px;
+  background: linear-gradient(160deg,#fdf4dc,#f0dcad);
+  border: 2px solid #d9b779; border-radius: 10px;
   padding: 16px 6px 8px; text-align: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,.2);
+  box-shadow: 0 3px 6px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.4);
+}
+/* 便签折角 */
+.order-card2::after {
+  content: ""; position: absolute; right: 0; bottom: 0;
+  border-width: 0 0 16px 16px; border-style: solid;
+  border-color: transparent transparent #e8cf98 transparent;
+  border-bottom-right-radius: 10px;
 }
 .oc-tab {
   position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
@@ -111,11 +118,11 @@ html, body {
 
 .combo-card {
   width: 92px; text-align: center;
-  background: linear-gradient(#fff7e6,#f6e7c4);
-  border: 2px solid #e0b063; border-radius: 14px; padding: 6px 8px;
-  box-shadow: 0 3px 6px rgba(0,0,0,.2);
+  background: linear-gradient(#f3d9a8,#e6c285);
+  border: 3px solid #b5854a; border-radius: 12px; padding: 6px 8px;
+  box-shadow: 0 3px 6px rgba(0,0,0,.25), inset 0 1px 2px rgba(255,255,255,.5);
 }
-.cc-title { font-size: 11px; font-weight: 800; color: #b06a1a; }
+.cc-title { font-size: 11px; font-weight: 800; color: #8a5a1a; }
 .cc-bar {
   height: 12px; background: #d8c39a; border-radius: 999px; overflow: hidden;
   margin: 4px 0 2px; box-shadow: inset 0 1px 2px rgba(0,0,0,.25);
