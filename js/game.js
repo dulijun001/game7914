@@ -124,28 +124,25 @@
       if (!this._raf) this.loop();
     }
 
-    // 开局预填充: 交错摆放多种水果且留间隙, 相邻不同种 -> 不会开局瞬间连锁,
-    // 既显得箱子有内容, 又保持稳定。
+    // 开局预填充: 四色网格摆放, 保证 8 邻域无同种 -> 塞满也绝不开局连锁。
     prefill() {
       const b = this.box;
-      // 调色板: 0 .. (targetTier-1), 最多取 4 种小果, 视觉一致
-      const palette = [];
-      for (let t = 0; t <= Math.min(this.cfg.targetTier - 1, 3); t++) palette.push(t);
-      if (palette.length < 2) palette.push(0, 1);
-      const rMax = Math.max(...palette.map(t => TIERS[t].r));
-      const gap = rMax * 2.25;
-      const cols = Math.max(3, Math.floor(b.w / gap));
+      // 取 4 种颜色: 目标以下的小果(最多4种); 不足则补一个"目标级"惰性装饰果(不可再合)
+      const colors = [];
+      for (let t = 0; t <= Math.min(this.cfg.targetTier - 1, 3); t++) colors.push(t);
+      while (colors.length < 4) colors.push(Math.min(this.cfg.targetTier, TOP));
+      const maxR = Math.max(...colors.map(t => TIERS[t].r));
+      const cols = Math.max(4, Math.floor(b.w / (maxR * 2)));
       const cw = b.w / cols;
-      const rows = 2;
-      let k = 0;
+      const sy = maxR * 1.92;
+      const fillH = b.h * 0.6;
+      const rows = Math.max(2, Math.floor(fillH / sy));
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          // 交错取色, 保证左右、上下邻位不同种
-          const t = palette[(col + row * 2 + k) % palette.length];
-          k++;
+          const t = colors[(col + 2 * row) % 4]; // 四色: 上下左右及对角都不同种
           const r = TIERS[t].r;
-          const x = b.x + cw * col + cw * 0.5 + (row % 2 ? cw * 0.25 : -cw * 0.1);
-          const y = b.y + b.h - r - row * (rMax * 2.1) - 4;
+          const x = b.x + cw * (col + 0.5) + (Math.random() - 0.5) * cw * 0.3;
+          const y = b.y + b.h - r - row * sy - 2 + (Math.random() - 0.5) * 6;
           const body = new Body(clamp(x, b.x + r, b.x + b.w - r), y, r, t);
           body.scale = 1; body.fresh = 0;
           this.world.add(body);
@@ -281,10 +278,7 @@
 
       if (over) {
         this.overflowT += dt;
-        const warn = $('#overflow-warn');
-        warn.classList.remove('hidden');
-        const left = Math.max(0, 3 - this.overflowT).toFixed(1);
-        warn.textContent = `⚠️ 即将溢出！快合成消除水果 (${left}s)`;
+        $('#overflow-warn').classList.remove('hidden');
         if (this.overflowT >= 3) this.fail();
       } else {
         this.overflowT = Math.max(0, this.overflowT - dt * 2);
