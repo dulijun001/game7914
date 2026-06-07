@@ -28,7 +28,10 @@
     TIERS.forEach(f => add(f.key, `assets/fruits/${f.key}.png`));
     ['rainbow', 'bomb', 'slice', 'rainbow_blast', 'bomb_blast', 'slice_blast']
       .forEach(k => add(k, `assets/special/${k}.png`));
-    add('crate', 'assets/props/crate.png');
+    add('crate', 'assets/scene/crate.png');
+    add('stand', 'assets/scene/stand.png');
+    add('hecheng', 'assets/scene/hecheng.png');
+    add('swirl', 'assets/scene/swirl.png');
   }
   function fruitIcon(tier, cls = 'fruit-ico') {
     return `<img class="${cls}" src="assets/fruits/${TIERS[tier].key}.png" alt="">`;
@@ -133,7 +136,7 @@
       const gap = rMax * 2.25;
       const cols = Math.max(3, Math.floor(b.w / gap));
       const cw = b.w / cols;
-      const rows = 3;
+      const rows = 2;
       let k = 0;
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -246,13 +249,14 @@
       this.score += gain;
 
       this.spawnParticles({ x: mx, y: my, type: nt });
-      this.floatText('合成! +' + gain, mx, my);
+      this.spawnFx('burst', mx, my, { size: TIERS[nt].r * 4, life: 0.45, s0: 0.4, s1: 1.5 });
+      this.spawnFx('hecheng', mx, my - 6, { size: 120, life: 0.7, s0: 0.4, s1: 1.05, rise: 26 });
       if (this.combo >= 2) this.showCombo(this.combo);
 
       if (nt >= this.cfg.targetTier) {
         // 合成出目标水果 -> 收集
         this.progress = Math.min(this.cfg.need, this.progress + 1);
-        this.spawnBlast(mx, my, 'rainbow');
+        this.spawnFx('burst', mx, my, { size: 150, life: 0.6, s0: 0.5, s1: 1.8 });
         this.floatText('订单 +1', mx, my - 26);
         this.syncHud();
         if (this.progress >= this.cfg.need) { this.win(); return; }
@@ -371,7 +375,10 @@
       }
     }
     updateParticles(dt) { for (const p of this.particles) { p.t += dt; p.vy += 1200 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } this.particles = this.particles.filter(p => p.t < p.life); }
-    spawnBlast(x, y, kind) { this.blasts.push({ x, y, kind, t: 0, life: 0.5 }); }
+    // 通用精灵特效: imgKey 指向 IMG, 从 s0 缩放到 s1 并淡出, 可上浮 rise 像素
+    spawnFx(imgKey, x, y, o = {}) {
+      this.blasts.push({ imgKey, x, y, t: 0, life: o.life || 0.5, size: o.size || 90, s0: o.s0 ?? 0.5, s1: o.s1 ?? 1.6, rise: o.rise || 0 });
+    }
     updateBlasts(dt) { for (const b of this.blasts) b.t += dt; this.blasts = this.blasts.filter(b => b.t < b.life); }
     floatText(txt, x, y) {
       const el = document.createElement('div'); el.className = 'float-score'; el.textContent = txt;
@@ -384,27 +391,46 @@
     // ---------- 渲染 ----------
     render() {
       ctx.clearRect(0, 0, W, H);
+      this.drawScenery();
       this.drawBox();
       this.drawDangerLine();
+      // 水果裁剪在箱体内 (上方留空让落下的水果可见, 下方不溢出前壁)
+      const b = this.box;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(b.x - 4, b.y - 100, b.w + 8, b.h + 100);
+      ctx.clip();
       const bodies = this.world ? this.world.bodies : [];
       for (const o of bodies) this.drawFruitShadow(o);
       for (const o of bodies) this.drawFruit(o);
+      ctx.restore();
       this.drawBlasts();
       this.drawParticles();
       if (this.running && !this.ended) this.drawAimer();
     }
 
+    // 背景装饰 (果摊) — 画在画布上, 位于 HUD 之下
+    drawScenery() {
+      const stand = IMG['stand'];
+      if (stand && stand.complete && stand.naturalWidth) {
+        const w = W * 0.42, s = w / stand.naturalWidth;
+        ctx.save(); ctx.globalAlpha = 0.96;
+        ctx.drawImage(stand, W - w + 10, this.box.y - stand.naturalHeight * s * 0.62, w, stand.naturalHeight * s);
+        ctx.restore();
+      }
+    }
+
     drawBox() {
       const b = this.box, crate = IMG['crate'];
       ctx.save();
-      // 深色内壁 (水果落在其中; 也作图未载入时回退)
+      // 深色内壁 (回退; 大部分被木箱图盖住)
       const grad = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
       grad.addColorStop(0, '#6b4a30'); grad.addColorStop(1, '#523823');
       ctx.fillStyle = grad;
-      roundRect(ctx, b.x, b.y, b.w, b.h, 18); ctx.fill();
+      roundRect(ctx, b.x + b.w * 0.04, b.y + b.h * 0.06, b.w * 0.92, b.h * 0.9, 14); ctx.fill();
       if (crate && crate.complete && crate.naturalWidth) {
-        // 木箱图框在玩法区四周 (壁在外侧, 开口对齐内壁)
-        const wx = b.w * 0.16, wt = b.h * 0.12, wb = b.h * 0.22;
+        // 开口木箱: 内部开口对齐玩法区
+        const wx = b.w * 0.10, wt = b.h * 0.10, wb = b.h * 0.12;
         ctx.drawImage(crate, b.x - wx, b.y - wt, b.w + wx * 2, b.h + wt + wb);
       }
       ctx.restore();
@@ -468,11 +494,14 @@
 
     drawBlasts() {
       for (const b of this.blasts) {
-        const img = IMG[b.kind + '_blast']; if (!img || !img.complete || !img.naturalWidth) continue;
-        const p = b.t / b.life, scale = 0.5 + p * 1.4, size = 90 * scale;
-        ctx.save(); ctx.globalAlpha = Math.max(0, 1 - p);
+        const img = IMG[b.imgKey]; if (!img || !img.complete || !img.naturalWidth) continue;
+        const p = b.t / b.life;
+        const scale = b.s0 + (b.s1 - b.s0) * p;
+        const size = b.size * scale;
+        const alpha = p < 0.2 ? p / 0.2 : 1 - (p - 0.2) / 0.8; // 快入慢出
+        ctx.save(); ctx.globalAlpha = Math.max(0, alpha);
         const iw = img.naturalWidth, ih = img.naturalHeight, s = size / Math.max(iw, ih);
-        ctx.drawImage(img, b.x - iw * s / 2, b.y - ih * s / 2, iw * s, ih * s); ctx.restore();
+        ctx.drawImage(img, b.x - iw * s / 2, b.y - b.rise * p - ih * s / 2, iw * s, ih * s); ctx.restore();
       }
     }
     drawParticles() {

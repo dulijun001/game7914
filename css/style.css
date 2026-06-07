@@ -98,18 +98,15 @@ html, body {
 }
 
 .next-card {
-  width: 78px; text-align: center; position: relative;
-  background: linear-gradient(#caa06a,#a87a48);
-  border-radius: 12px; padding: 4px 4px 0;
-  box-shadow: 0 3px 6px rgba(0,0,0,.2);
+  position: relative; width: 84px; height: 112px; text-align: center;
+  display: flex; align-items: flex-start; justify-content: center;
 }
-.nc-title { font-size: 12px; font-weight: 800; color: #fff3d6; }
-.nc-fruit { height: 46px; display: flex; align-items: center; justify-content: center; }
-.nc-fruit img { height: 42px; width: auto; }
-.nc-funnel {
-  height: 14px; margin: 0 auto;
-  border-left: 14px solid transparent; border-right: 14px solid transparent;
-  border-top: 14px solid #8a5f38; width: 30px;
+.nc-funnel-img {
+  width: 84px; height: auto; filter: drop-shadow(0 3px 5px rgba(0,0,0,.3));
+}
+.nc-next {
+  position: absolute; top: 38%; left: 50%; transform: translate(-50%,-50%);
+  width: 34px; height: auto;
 }
 
 .combo-card {
@@ -160,17 +157,17 @@ html, body {
 }
 .tool-btn {
   position: relative; border: none; cursor: pointer;
-  width: 64px; height: 64px; border-radius: 16px;
-  background: linear-gradient(#fff,#ffe9c2);
-  box-shadow: 0 4px 0 #d9a85a, 0 6px 8px rgba(0,0,0,.2);
+  width: 66px; height: 66px; padding: 0; background: transparent;
+  background-image: url("../assets/tool/btnbase.png");
+  background-size: 100% 100%; background-repeat: no-repeat;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  transition: transform .08s;
+  filter: drop-shadow(0 4px 4px rgba(0,0,0,.25)); transition: transform .08s;
 }
-.tool-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #d9a85a; }
-.tool-btn.active { outline: 3px solid #5ad06a; }
+.tool-btn:active { transform: translateY(3px); }
+.tool-btn.active { filter: drop-shadow(0 0 6px #5ad06a) drop-shadow(0 0 6px #5ad06a); }
 .tool-btn.depleted { filter: grayscale(.7) opacity(.6); }
-.tool-ico { font-size: 26px; }
-.tool-name { font-size: 11px; font-weight: 700; color: #8a6a3a; }
+.tool-ico { width: 34px; height: 34px; object-fit: contain; margin-top: 2px; }
+.tool-name { font-size: 11px; font-weight: 800; color: #8a6a3a; margin-top: -1px; }
 .tool-badge {
   position: absolute; top: -6px; right: -6px;
   background: #4aa83a; color: #fff; font-size: 11px; font-weight: 800;
