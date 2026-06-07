@@ -26,10 +26,19 @@ html, body {
 .chip {
   display: inline-flex; align-items: center; gap: 4px;
   background: rgba(255,255,255,.92);
-  border-radius: 999px; padding: 4px 12px;
-  font-size: 13px; font-weight: 700; color: #5a4a2a;
+  border-radius: 999px; padding: 4px 12px 4px 10px;
+  font-size: 14px; font-weight: 800; color: #5a4a2a;
   box-shadow: 0 2px 4px rgba(0,0,0,.15);
 }
+/* 资源图标 (美术) */
+.chip.lives, .chip.coins, .chip.gems { position: relative; padding-left: 28px; }
+.chip.lives::before, .chip.coins::before, .chip.gems::before {
+  content: ""; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; background-size: contain; background-repeat: no-repeat; background-position: center;
+}
+.chip.lives::before { background-image: url("../assets/ui/ic_heart.png"); }
+.chip.coins::before { background-image: url("../assets/ui/ic_coin.png"); }
+.chip.gems::before  { background-image: url("../assets/ui/ic_gem.png"); }
 .chip.lives { color: #e0556b; }
 .chip.coins { color: #d99a1a; }
 .chip.gems { color: #6a5bd0; }
@@ -37,6 +46,13 @@ html, body {
 /* ===== HUD ===== */
 #hud { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 #hud > * { pointer-events: auto; }
+/* 游戏内吉祥物 (订单旁探出) */
+.hud-girl {
+  position: absolute; left: -22px; top: 86px;
+  width: 96px; pointer-events: none; z-index: 6;
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,.3));
+  transform: scaleX(-1);
+}
 .hud-top {
   position: absolute; top: 0; left: 0; right: 0;
   display: flex; justify-content: space-between;
@@ -188,6 +204,14 @@ html, body {
 }
 .big-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #2f7a26; }
 .big-btn.small { font-size: 18px; padding: 12px 30px; margin-top: 0; }
+/* 主菜单开始按钮用美术图 */
+#btn-start {
+  margin-top: 26px; width: 250px; height: 82px; padding: 0;
+  background: url("../assets/ui/btn_start.png") center/contain no-repeat;
+  box-shadow: none; color: transparent; font-size: 0;
+  filter: drop-shadow(0 5px 6px rgba(0,0,0,.3));
+}
+#btn-start:active { transform: translateY(4px); box-shadow: none; }
 .big-btn.ghost {
   background: linear-gradient(#fff,#f0e6d0); color: #8a6a3a;
   box-shadow: 0 4px 0 #d9b878, 0 6px 10px rgba(0,0,0,.2);
@@ -228,16 +252,28 @@ html, body {
   display: flex; flex-direction: column; gap: 22px;
 }
 .map-node {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: linear-gradient(#ffd24a,#f0a83a);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  box-shadow: 0 4px 0 #c9851a, 0 6px 8px rgba(0,0,0,.25);
+  width: 92px; height: 84px;
+  background: url("../assets/ui/node_stump.png") center/contain no-repeat;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer; flex-shrink: 0; position: relative;
+  filter: drop-shadow(0 5px 6px rgba(0,0,0,.3));
 }
-.map-node.cur { background: linear-gradient(#7ed957,#3a9a3a); transform: scale(1.15); box-shadow: 0 4px 0 #2f7a26, 0 0 0 4px rgba(255,255,255,.6); }
-.map-node.locked { background: linear-gradient(#bbb,#999); cursor: not-allowed; box-shadow: 0 4px 0 #777; }
-.node-num { font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 2px 2px rgba(0,0,0,.3); }
-.node-stars { font-size: 9px; }
+.map-node.cur { transform: scale(1.18); }
+.map-node.cur::after {
+  content: "▼ 当前"; position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-weight: 800; color: #fff; white-space: nowrap;
+  text-shadow: 0 2px 0 #3a7a2a, 0 0 6px rgba(0,0,0,.4);
+}
+.map-node.locked {
+  background-image: url("../assets/ui/node_lock.png");
+  width: 70px; height: 70px; cursor: not-allowed;
+}
+.node-num {
+  font-size: 26px; font-weight: 900; color: #fff;
+  text-shadow: 0 2px 0 #b5651a, 0 3px 3px rgba(0,0,0,.4);
+  margin-top: -10px; /* 数字落在树桩顶面 */
+}
+.map-node.locked .node-num { display: none; }
 .map-footer {
   width: 100%; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
   background: rgba(255,255,255,.9); border-radius: 20px 20px 0 0;

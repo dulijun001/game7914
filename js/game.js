@@ -35,6 +35,8 @@
     const add = (key, src) => { const im = new Image(); im.src = src; IMG[key] = im; };
     FRUITS.forEach(f => add(f.key, `assets/fruits/${f.key}.png`));
     ['rainbow', 'bomb', 'slice'].forEach(k => add(k, `assets/special/${k}.png`));
+    ['rainbow_blast', 'bomb_blast', 'slice_blast'].forEach(k => add(k, `assets/special/${k}.png`));
+    add('crate', 'assets/props/crate.png');
   }
   // 生成订单/结算里展示水果用的 <img> 标签
   function fruitIcon(type, cls = 'fruit-ico') {
@@ -113,6 +115,7 @@
       this.activeTool = null;
       this.tools = { shuffle: 3, hammer: 3, magnet: 1 };
       this.particles = [];
+      this.blasts = [];
       this.ended = false;
       this.layout();
     }
@@ -147,6 +150,7 @@
       this.particles = [];
       this.tools = { shuffle: 3, hammer: 3, magnet: 1 };
       this.activeTool = null;
+      this.blasts = [];
       this.fillBox(true);
       this.syncHud();
       this.lastT = performance.now();
@@ -204,6 +208,7 @@
         this.world.step(dt);
         this.maintainFill();
         this.updateParticles(dt);
+        this.updateBlasts(dt);
         if (this.timeLeft <= 0) {
           this.timeLeft = 0;
           this.fail();
@@ -240,6 +245,7 @@
       for (const o of comp) {
         if (o.removed) continue;
         cx += o.x; cy += o.y;
+        if (o.special) this.spawnBlast(o.x, o.y, o.special);
         this.spawnParticles(o);
         if (o.type === this.cfg.target || o.special === 'rainbow') targetCleared++;
         this.world.remove(o);
@@ -276,6 +282,7 @@
     detonate(bomb) {
       const radius = this.fruitR * 3.2;
       const hit = this.world.inRadius(bomb.x, bomb.y, radius);
+      this.spawnBlast(bomb.x, bomb.y, 'bomb');
       this.spawnParticles(bomb, 18, '#ffd24a');
       let cleared = 0, targetCleared = 0;
       for (const o of hit) {
@@ -409,6 +416,28 @@
         });
       }
     }
+    spawnBlast(x, y, kind) {
+      this.blasts.push({ x, y, kind, t: 0, life: 0.5 });
+    }
+    updateBlasts(dt) {
+      for (const b of this.blasts) b.t += dt;
+      this.blasts = this.blasts.filter(b => b.t < b.life);
+    }
+    drawBlasts() {
+      for (const b of this.blasts) {
+        const img = IMG[b.kind + '_blast'];
+        if (!img || !img.complete || !img.naturalWidth) continue;
+        const p = b.t / b.life;
+        const scale = 0.5 + p * 1.4;
+        const size = this.fruitR * 3.6 * scale;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 1 - p);
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        const s = size / Math.max(iw, ih);
+        ctx.drawImage(img, b.x - iw * s / 2, b.y - ih * s / 2, iw * s, ih * s);
+        ctx.restore();
+      }
+    }
     updateParticles(dt) {
       for (const p of this.particles) {
         p.t += dt;
@@ -450,6 +479,7 @@
       for (const o of this.world ? this.world.bodies : []) {
         this.drawFruit(o);
       }
+      this.drawBlasts();
       this.drawParticles();
       // 拖拽连线提示
       if (this.drag) this.drawDragHint(this.drag);
@@ -457,27 +487,21 @@
 
     drawBox() {
       const b = this.box;
-      const r = 22;
-      // 木箱内壁
+      const crate = IMG['crate'];
       ctx.save();
-      ctx.fillStyle = '#caa06a';
-      roundRect(ctx, b.x - 10, b.y - 4, b.w + 20, b.h + 14, r);
-      ctx.fill();
-      // 内阴影区
+      // 内壁深色底 (让水果有容器感, 也作为图未加载时的回退)
+      const r = 20;
       const grad = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
-      grad.addColorStop(0, '#a9794a');
-      grad.addColorStop(1, '#8a5f38');
+      grad.addColorStop(0, '#7a5436');
+      grad.addColorStop(1, '#5e3f28');
       ctx.fillStyle = grad;
-      roundRect(ctx, b.x, b.y, b.w, b.h, r - 6);
+      roundRect(ctx, b.x, b.y, b.w, b.h, r);
       ctx.fill();
-      // 木条纹理
-      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
-      ctx.lineWidth = 2;
-      for (let i = 1; i < 4; i++) {
-        const yy = b.y + (b.h / 4) * i;
-        ctx.beginPath();
-        ctx.moveTo(b.x, yy); ctx.lineTo(b.x + b.w, yy);
-        ctx.stroke();
+      if (crate && crate.complete && crate.naturalWidth) {
+        // 木箱图: 适当放大覆盖, 让木壁在玩法区四周
+        const pad = b.w * 0.10;
+        ctx.drawImage(crate, b.x - pad, b.y - pad * 0.7,
+          b.w + pad * 2, b.h + pad * 1.5);
       }
       ctx.restore();
     }
@@ -683,8 +707,7 @@
       const cur = n === state.level;
       node.className = 'map-node' + (cur ? ' cur' : '') + (unlocked ? '' : ' locked');
       node.style.marginLeft = ((Math.sin(n * 1.3) * 0.5 + 0.5) * 50) + '%';
-      node.innerHTML = `<span class="node-num">${n}</span>` +
-        (unlocked ? '<span class="node-stars">⭐⭐⭐</span>' : '🔒');
+      node.innerHTML = `<span class="node-num">${n}</span>`;
       if (unlocked) node.addEventListener('click', () => {
         state.level = n;
         $('#map-cur-level').textContent = n;
