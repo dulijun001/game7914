@@ -46,50 +46,104 @@ html, body {
 /* ===== HUD ===== */
 #hud { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 #hud > * { pointer-events: auto; }
-/* 游戏内吉祥物 (订单旁探出) */
-.hud-girl {
-  position: absolute; left: -22px; top: 86px;
-  width: 96px; pointer-events: none; z-index: 6;
-  filter: drop-shadow(0 4px 5px rgba(0,0,0,.3));
-  transform: scaleX(-1);
-}
+/* 顶部栏: 关卡徽章 + 生命/金币 + 设置 */
 .hud-top {
   position: absolute; top: 0; left: 0; right: 0;
-  display: flex; justify-content: space-between;
-  padding: 10px 12px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px;
 }
-.hud-left, .hud-right { display: flex; gap: 6px; }
+.lvl-badge {
+  background: linear-gradient(#fff7e6,#f3d9a3);
+  border: 2px solid #e0b063; border-radius: 12px;
+  padding: 4px 12px; font-weight: 900; color: #8a5a1a; font-size: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+.hud-top .chip { font-size: 13px; }
+.gear-btn {
+  margin-left: auto; width: 38px; height: 38px; border: none; cursor: pointer;
+  background: url("../assets/ui/btn_gear.png") center/contain no-repeat;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.3));
+}
 
-.order-bar {
-  position: absolute; top: 50px; left: 12px; right: 12px;
-  display: flex; gap: 8px; align-items: stretch;
+/* 中部: 订单 / 下一个 / 连击奖励 */
+.hud-mid {
+  position: absolute; top: 48px; left: 8px; right: 8px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;
 }
-.order-card, .reward-card, .timer-card {
-  background: rgba(255,255,255,.95);
-  border-radius: 14px; padding: 6px 10px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,.15);
+.order-card2 {
+  position: relative; width: 92px;
+  background: linear-gradient(#fff7e6,#f6e7c4);
+  border: 2px solid #e0b063; border-radius: 14px;
+  padding: 16px 6px 8px; text-align: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,.2);
 }
-.order-card { flex: 1.4; flex-direction: row; gap: 8px; }
-.order-title, .reward-title, .timer-title { font-size: 11px; color: #9a8b6a; font-weight: 700; }
-.order-fruit { display: flex; align-items: center; gap: 2px; }
+.oc-tab {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(#7ed957,#4aa83a); color: #fff;
+  font-size: 12px; font-weight: 800; padding: 2px 14px; border-radius: 999px;
+  border: 2px solid #fff; white-space: nowrap;
+}
+.oc-fruit { height: 44px; display: flex; align-items: center; justify-content: center; }
 .order-emoji { display: inline-flex; }
 .fruit-ico { width: auto; vertical-align: middle; }
-.order-emoji .fruit-ico { height: 34px; }
-.menu-order-fruit .fruit-ico { height: 52px; }
-.win-order .fruit-ico, .lose-order .fruit-ico { height: 46px; }
-.order-count { font-size: 15px; font-weight: 800; color: #4a8a3a; }
-.reward-val { font-size: 14px; font-weight: 800; color: #d99a1a; }
-.timer-val { font-size: 16px; font-weight: 800; color: #4a8a3a; }
-.timer-val.low { color: #e0556b; animation: blink .6s infinite; }
-@keyframes blink { 50% { opacity: .4; } }
+.oc-fruit .fruit-ico { height: 44px; }
+.oc-x { font-size: 17px; font-weight: 900; color: #5a4a2a; margin-top: 2px; }
+.oc-reward {
+  margin-top: 4px; font-size: 13px; font-weight: 800; color: #d99a1a;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+}
+.coin-mini, .coin-ic {
+  width: 16px; height: 16px; display: inline-block;
+  background: url("../assets/ui/ic_coin.png") center/contain no-repeat;
+}
+
+.next-card {
+  width: 78px; text-align: center; position: relative;
+  background: linear-gradient(#caa06a,#a87a48);
+  border-radius: 12px; padding: 4px 4px 0;
+  box-shadow: 0 3px 6px rgba(0,0,0,.2);
+}
+.nc-title { font-size: 12px; font-weight: 800; color: #fff3d6; }
+.nc-fruit { height: 46px; display: flex; align-items: center; justify-content: center; }
+.nc-fruit img { height: 42px; width: auto; }
+.nc-funnel {
+  height: 14px; margin: 0 auto;
+  border-left: 14px solid transparent; border-right: 14px solid transparent;
+  border-top: 14px solid #8a5f38; width: 30px;
+}
+
+.combo-card {
+  width: 92px; text-align: center;
+  background: linear-gradient(#fff7e6,#f6e7c4);
+  border: 2px solid #e0b063; border-radius: 14px; padding: 6px 8px;
+  box-shadow: 0 3px 6px rgba(0,0,0,.2);
+}
+.cc-title { font-size: 11px; font-weight: 800; color: #b06a1a; }
+.cc-bar {
+  height: 12px; background: #d8c39a; border-radius: 999px; overflow: hidden;
+  margin: 4px 0 2px; box-shadow: inset 0 1px 2px rgba(0,0,0,.25);
+}
+.cc-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg,#ffd24a,#ff8a2b); border-radius: 999px;
+  transition: width .25s;
+}
+.cc-num { font-size: 12px; font-weight: 800; color: #8a6a3a; }
+
+/* 溢出警告 */
+.overflow-warn {
+  position: absolute; top: 28%; left: 50%; transform: translateX(-50%);
+  background: rgba(200,30,30,.92); color: #fff; font-size: 13px; font-weight: 800;
+  padding: 5px 14px; border-radius: 999px; white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3); animation: warnPulse .8s infinite;
+}
+@keyframes warnPulse { 50% { transform: translateX(-50%) scale(1.06); } }
 
 /* combo */
 .combo-pop {
-  position: absolute; top: 38%; left: 50%; transform: translate(-50%,-50%) scale(.4);
-  font-size: 34px; font-weight: 900; color: #fff;
-  text-shadow: 0 0 8px #ff8a3d, 0 3px 0 #d9651a; opacity: 0;
-  pointer-events: none;
+  position: absolute; top: 44%; left: 50%; transform: translate(-50%,-50%) scale(.4);
+  font-size: 32px; font-weight: 900; color: #fff;
+  text-shadow: 0 0 8px #ff8a3d, 0 3px 0 #d9651a; opacity: 0; pointer-events: none;
 }
 .combo-pop.show { animation: comboShow .8s ease-out; }
 @keyframes comboShow {
@@ -99,14 +153,14 @@ html, body {
   100% { opacity: 0; transform: translate(-50%,-60%) scale(1); }
 }
 
-/* tools */
+/* tools (4 个) */
 .tools-bar {
-  position: absolute; bottom: 14px; left: 0; right: 0;
-  display: flex; justify-content: center; gap: 16px;
+  position: absolute; bottom: 38px; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 10px;
 }
 .tool-btn {
   position: relative; border: none; cursor: pointer;
-  width: 66px; height: 66px; border-radius: 18px;
+  width: 64px; height: 64px; border-radius: 16px;
   background: linear-gradient(#fff,#ffe9c2);
   box-shadow: 0 4px 0 #d9a85a, 0 6px 8px rgba(0,0,0,.2);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -124,11 +178,20 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   border: 2px solid #fff;
 }
+.play-hint {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(255,255,255,.8); color: #6a5a3a;
+  font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 999px;
+  white-space: nowrap;
+}
 .tool-hint {
-  position: absolute; bottom: 92px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%);
   background: rgba(0,0,0,.7); color: #fff; padding: 6px 14px;
   border-radius: 999px; font-size: 13px; font-weight: 700;
 }
+/* 结算面板里的水果图标尺寸 */
+.menu-order-fruit .fruit-ico { height: 52px; }
+.win-order .fruit-ico, .lose-order .fruit-ico { height: 46px; }
 
 /* ===== 漂浮分数 ===== */
 #float-layer { position: absolute; inset: 0; z-index: 6; pointer-events: none; }

@@ -13,36 +13,35 @@
 
     <!-- ============ 游戏内 HUD ============ -->
     <div id="hud" class="hidden">
-      <img class="hud-girl" src="assets/char/girl_point.png" alt="">
       <div class="hud-top">
-        <div class="hud-left">
-          <div class="chip lvl">关卡 <span id="hud-level">1</span></div>
-          <div class="chip score">分数 <span id="hud-score">0</span></div>
+        <div class="lvl-badge">关卡 <span id="hud-level">1</span></div>
+        <div class="chip lives"><span id="hud-lives">5</span> 已满</div>
+        <div class="chip coins"><span id="hud-coins">2,450</span></div>
+        <button class="gear-btn" aria-label="设置"></button>
+      </div>
+
+      <div class="hud-mid">
+        <div class="order-card2">
+          <div class="oc-tab">订单</div>
+          <div class="oc-fruit"><span id="order-emoji" class="order-emoji">🍉</span></div>
+          <div class="oc-x"><span id="order-need">0/3</span></div>
+          <div class="oc-reward"><span class="coin-mini"></span><span id="order-reward">900</span></div>
         </div>
-        <div class="hud-right">
-          <div class="chip lives"><span id="hud-lives">5</span></div>
-          <div class="chip coins"><span id="hud-coins">2450</span></div>
+
+        <div class="next-card">
+          <div class="nc-title">下一个</div>
+          <div class="nc-fruit"><img id="next-fruit" src="" alt=""></div>
+          <div class="nc-funnel"></div>
+        </div>
+
+        <div class="combo-card">
+          <div class="cc-title">连击奖励</div>
+          <div class="cc-bar"><div id="combo-fill" class="cc-fill"></div></div>
+          <div class="cc-num"><span id="combo-cur">0</span>/<span id="combo-goal">5</span></div>
         </div>
       </div>
 
-      <div class="order-bar">
-        <div class="order-card">
-          <span class="order-title">订单</span>
-          <div class="order-fruit">
-            <span id="order-emoji" class="order-emoji">🍉</span>
-            <span class="order-count">x<span id="order-need">3</span></span>
-          </div>
-        </div>
-        <div class="reward-card">
-          <span class="reward-title">奖励</span>
-          <span class="reward-val">🪙 <span id="order-reward">600</span></span>
-        </div>
-        <div class="timer-card">
-          <span class="timer-title">时间</span>
-          <span class="timer-val" id="hud-timer">01:00</span>
-        </div>
-      </div>
-
+      <div id="overflow-warn" class="overflow-warn hidden"></div>
       <div id="combo-pop" class="combo-pop"></div>
 
       <div class="tools-bar">
@@ -51,14 +50,19 @@
           <span class="tool-badge">3</span>
         </button>
         <button class="tool-btn" data-tool="hammer">
-          <span class="tool-ico">🔨</span><span class="tool-name">敲一敲</span>
+          <span class="tool-ico">🔨</span><span class="tool-name">锤子</span>
           <span class="tool-badge">3</span>
         </button>
         <button class="tool-btn" data-tool="magnet">
           <span class="tool-ico">🧲</span><span class="tool-name">磁铁</span>
-          <span class="tool-badge">1</span>
+          <span class="tool-badge">3</span>
+        </button>
+        <button class="tool-btn" data-tool="rainbow">
+          <span class="tool-ico">🌈</span><span class="tool-name">彩虹果</span>
+          <span class="tool-badge">3</span>
         </button>
       </div>
+      <div class="play-hint">💡 水果掉落后，两个相同水果相遇会自动合成</div>
       <div id="tool-hint" class="tool-hint hidden">点击一个水果敲碎它</div>
     </div>
 
@@ -167,7 +171,7 @@
           <span class="lose-prog"><span id="lose-have">2</span>/<span id="lose-need">3</span></span>
         </div>
         <button id="btn-revive" class="big-btn revive">
-          💚 复活继续 <small>+5秒 · 💎5</small>
+          💚 复活继续 <small>清理部分水果 · 💎5</small>
         </button>
         <div class="lose-actions">
           <button class="big-btn ghost" data-act="replay">重新开始</button>
