@@ -16,20 +16,11 @@ html, body {
   max-width: 480px;
   margin: 0 auto;
   overflow: hidden;
-  background: linear-gradient(#bfe89a, #8fd06a);
+  /* 游戏内背景 (果园草地) */
+  background: url("../assets/bg/bg_meadow.png") center/cover no-repeat, #8fd06a;
 }
 
 #game-canvas { position: absolute; inset: 0; z-index: 1; }
-
-/* 通用背景 (果园) */
-#app::before {
-  content: "";
-  position: absolute; inset: 0; z-index: 0;
-  background:
-    radial-gradient(circle at 15% 12%, rgba(255,255,255,.25), transparent 30%),
-    radial-gradient(circle at 85% 8%, rgba(255,230,120,.3), transparent 28%),
-    linear-gradient(#cdeea0 0%, #a6dc7a 55%, #7cc25a 100%);
-}
 
 /* ===== chips ===== */
 .chip {
@@ -66,7 +57,11 @@ html, body {
 .order-card { flex: 1.4; flex-direction: row; gap: 8px; }
 .order-title, .reward-title, .timer-title { font-size: 11px; color: #9a8b6a; font-weight: 700; }
 .order-fruit { display: flex; align-items: center; gap: 2px; }
-.order-emoji { font-size: 26px; }
+.order-emoji { display: inline-flex; }
+.fruit-ico { width: auto; vertical-align: middle; }
+.order-emoji .fruit-ico { height: 34px; }
+.menu-order-fruit .fruit-ico { height: 52px; }
+.win-order .fruit-ico, .lose-order .fruit-ico { height: 46px; }
 .order-count { font-size: 15px; font-weight: 800; color: #4a8a3a; }
 .reward-val { font-size: 14px; font-weight: 800; color: #d99a1a; }
 .timer-val { font-size: 16px; font-weight: 800; color: #4a8a3a; }
@@ -146,9 +141,20 @@ html, body {
 /* ===== 主菜单 ===== */
 #screen-menu {
   padding: 14px; justify-content: flex-start;
-  background:
-    radial-gradient(circle at 50% 18%, rgba(255,255,255,.35), transparent 40%),
-    linear-gradient(#cdeea0, #8fd06a);
+  background: url("../assets/bg/bg_stand.png") center/cover no-repeat, #8fd06a;
+}
+/* 主菜单吉祥物 */
+.menu-girl {
+  position: absolute; left: -10px; bottom: 96px;
+  width: 38%; max-width: 180px;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,.3));
+  pointer-events: none;
+}
+/* 结算弹窗吉祥物 */
+.result-girl {
+  position: absolute; right: -14px; bottom: 8px;
+  width: 92px; pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.3));
 }
 .menu-top { width: 100%; display: flex; gap: 8px; justify-content: flex-start; }
 .title {
@@ -208,7 +214,7 @@ html, body {
 
 /* ===== 地图 ===== */
 #screen-map {
-  background: linear-gradient(#aee07a, #6db84a);
+  background: url("../assets/bg/bg_map.png") center/cover no-repeat, #6db84a;
   justify-content: flex-start;
 }
 .map-header {

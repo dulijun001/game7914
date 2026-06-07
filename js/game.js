@@ -7,24 +7,39 @@
 (() => {
   'use strict';
 
-  // ---------- 水果定义 (emoji 占位, 后续可替换为美术资产) ----------
+  // ---------- 水果定义 (美术资产, color 用于消除粒子特效) ----------
   const FRUITS = [
-    { emoji: '🍓', color: '#ff5a6e', name: '草莓' },
-    { emoji: '🫐', color: '#5b6cf0', name: '蓝莓' },
-    { emoji: '🍋', color: '#ffd24a', name: '柠檬' },
-    { emoji: '🍑', color: '#ff9a5a', name: '桃子' },
-    { emoji: '🍇', color: '#a35bd6', name: '葡萄' },
-    { emoji: '🍉', color: '#3fbf67', name: '西瓜' },
-    { emoji: '🥝', color: '#8bc34a', name: '猕猴桃' },
-    { emoji: '🍊', color: '#ff8a3d', name: '橙子' },
-    { emoji: '🍍', color: '#f2c14e', name: '菠萝' },
+    { key: 'strawberry',  color: '#ff4d5e', name: '草莓' },
+    { key: 'blueberry',   color: '#4a64d8', name: '蓝莓' },
+    { key: 'lemon',       color: '#ffd23f', name: '柠檬' },
+    { key: 'peach',       color: '#ff9e7a', name: '桃子' },
+    { key: 'grape',       color: '#9b54c8', name: '葡萄' },
+    { key: 'watermelon',  color: '#3fae5a', name: '西瓜' },
+    { key: 'kiwi',        color: '#8bc34a', name: '猕猴桃' },
+    { key: 'orange',      color: '#ff8a2b', name: '橙子' },
+    { key: 'pineapple',   color: '#f2c14e', name: '菠萝' },
+    { key: 'apple',       color: '#e8413a', name: '苹果' },
+    { key: 'pomegranate', color: '#e53b44', name: '石榴' },
+    { key: 'coconut',     color: '#caa472', name: '椰子' },
   ];
 
   const SPECIAL = {
-    rainbow: { emoji: '🌈', label: '彩虹果' },
-    bomb:    { emoji: '💥', label: '星星炸弹' },
-    slice:   { emoji: '🍋', label: '柠檬切片' },
+    rainbow: { key: 'rainbow', label: '彩虹果' },
+    bomb:    { key: 'bomb',    label: '星星炸弹' },
+    slice:   { key: 'slice',   label: '柠檬切片' },
   };
+
+  // ---------- 图片预加载 ----------
+  const IMG = {};
+  function loadImages() {
+    const add = (key, src) => { const im = new Image(); im.src = src; IMG[key] = im; };
+    FRUITS.forEach(f => add(f.key, `assets/fruits/${f.key}.png`));
+    ['rainbow', 'bomb', 'slice'].forEach(k => add(k, `assets/special/${k}.png`));
+  }
+  // 生成订单/结算里展示水果用的 <img> 标签
+  function fruitIcon(type, cls = 'fruit-ico') {
+    return `<img class="${cls}" src="assets/fruits/${FRUITS[type].key}.png" alt="">`;
+  }
 
   // ---------- 关卡配置 ----------
   // typeCount: 本关使用的水果种类数; target: 订单目标水果索引; need: 需要消除数量
@@ -479,37 +494,33 @@
 
     drawFruit(o) {
       const r = o.r * o.scale;
+      const color = FRUITS[o.type] ? FRUITS[o.type].color : '#fff';
+      const img = o.special ? IMG[o.special] : IMG[FRUITS[o.type].key];
       ctx.save();
       ctx.translate(o.x, o.y);
-      // 底色圆 (增加辨识度)
-      let color = FRUITS[o.type] ? FRUITS[o.type].color : '#fff';
-      let emoji = FRUITS[o.type] ? FRUITS[o.type].emoji : '❔';
-      if (o.special === 'rainbow') { emoji = SPECIAL.rainbow.emoji; color = '#fff'; }
-      else if (o.special === 'bomb') { emoji = SPECIAL.bomb.emoji; color = '#ffe08a'; }
 
-      // 高亮拖拽体
+      // 拖拽高亮
       if (o.dragging) {
-        ctx.shadowColor = 'rgba(255,255,255,0.9)';
-        ctx.shadowBlur = 18;
+        ctx.shadowColor = 'rgba(255,255,255,0.95)';
+        ctx.shadowBlur = 20;
       }
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, Math.PI * 2);
-      const g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.2, 0, 0, r);
-      g.addColorStop(0, lighten(color, 0.35));
-      g.addColorStop(1, color);
-      ctx.fillStyle = g;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      // 高光
-      ctx.beginPath();
-      ctx.arc(-r * 0.32, -r * 0.32, r * 0.22, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.fill();
-      // emoji
-      ctx.font = `${r * 1.25}px "Segoe UI Emoji","Apple Color Emoji",serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(emoji, 0, r * 0.06);
+
+      if (img && img.complete && img.naturalWidth) {
+        // 保持比例缩放, 让水果直径约等于碰撞直径 (特殊果略大)
+        const d = r * 2 * (o.special ? 1.18 : 1.12);
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        const s = d / Math.max(iw, ih);
+        ctx.drawImage(img, -iw * s / 2, -ih * s / 2, iw * s, ih * s);
+      } else {
+        // 资源未加载时的彩色圆占位
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        const g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.2, 0, 0, r);
+        g.addColorStop(0, lighten(color, 0.35));
+        g.addColorStop(1, color);
+        ctx.fillStyle = g;
+        ctx.fill();
+      }
       ctx.restore();
     }
 
@@ -547,7 +558,7 @@
       $('#hud-score').textContent = this.score;
       $('#hud-lives').textContent = state.lives;
       $('#hud-coins').textContent = state.coins;
-      $('#order-emoji').textContent = FRUITS[this.cfg.target].emoji;
+      $('#order-emoji').innerHTML = fruitIcon(this.cfg.target);
       $('#order-need').textContent = `${this.progress}/${this.cfg.need}`;
       $('#order-reward').textContent = this.cfg.reward;
       this.updateToolBadges();
@@ -571,7 +582,7 @@
       state.coins += this.cfg.reward;
       state.maxLevel = Math.max(state.maxLevel, this.cfg.n + 1);
       const stars = this.calcStars();
-      $('#win-emoji').textContent = FRUITS[this.cfg.target].emoji;
+      $('#win-emoji').innerHTML = fruitIcon(this.cfg.target);
       $('#win-need').textContent = this.cfg.need;
       $('#win-score').textContent = this.score;
       $('#win-combo').textContent = this.bestCombo;
@@ -591,7 +602,7 @@
       if (this.ended) return;
       this.ended = true;
       this.running = false;
-      $('#lose-emoji').textContent = FRUITS[this.cfg.target].emoji;
+      $('#lose-emoji').innerHTML = fruitIcon(this.cfg.target);
       $('#lose-have').textContent = this.progress;
       $('#lose-need').textContent = this.cfg.need;
       $('#lose-left').textContent = Math.max(0, this.cfg.need - this.progress);
@@ -651,7 +662,7 @@
     $$('.coins-val').forEach(e => e.textContent = state.coins);
     const cfg = makeLevel(state.level);
     $('.menu-level').textContent = state.level;
-    $('#menu-order-emoji').textContent = FRUITS[cfg.target].emoji;
+    $('#menu-order-emoji').innerHTML = fruitIcon(cfg.target);
     $('#menu-order-need').textContent = cfg.need;
     $('#menu-order-reward-val').textContent = cfg.reward;
   }
@@ -749,6 +760,7 @@
 
   // ---------- 初始化 ----------
   window.addEventListener('load', () => {
+    loadImages();
     resize();
     game = new Game();
     window.__game = game; // 调试/测试钩子
