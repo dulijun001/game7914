@@ -39,7 +39,7 @@
 
   // ---------- 关卡配置 ----------
   function makeLevel(n) {
-    const targetTier = Math.min(3 + Math.floor((n - 1) / 2), TOP); // L1=3起, 逐关升高
+    const targetTier = Math.min(4 + Math.floor((n - 1) / 2), TOP); // L1=橙子(4)起, 逐关升高
     const need = 3;
     const reward = 400 + n * 50;
     return { n, targetTier, need, reward, comboGoal: 5 };
@@ -117,6 +117,7 @@
       this.activeTool = null; this.curSpecial = null;
       this.overflowT = 0; this.dropCD = 0;
       this.aimX = this.box.x + this.box.w / 2;
+      this.mergeEnabled = false; this.settleT = 0; this._reSolvedOnce = false; // 开局先沉降, 期间不合成
       this.cur = this.randDrop(); this.nxt = this.randDrop();
       this.prefill();
       this.syncHud(); this.syncNext();
@@ -124,29 +125,58 @@
       if (!this._raf) this.loop();
     }
 
-    // 开局预填充: 四色网格摆放, 保证 8 邻域无同种 -> 塞满也绝不开局连锁。
+    // 开局预填充: 随机多种水果自然堆叠成一堆 (沉降后再消同种冲突, 保证不连锁)
     prefill() {
       const b = this.box;
-      // 取 4 种颜色: 目标以下的小果(最多4种); 不足则补一个"目标级"惰性装饰果(不可再合)
-      const colors = [];
-      for (let t = 0; t <= Math.min(this.cfg.targetTier - 1, 3); t++) colors.push(t);
-      while (colors.length < 4) colors.push(Math.min(this.cfg.targetTier, TOP));
-      const maxR = Math.max(...colors.map(t => TIERS[t].r));
-      const cols = Math.max(4, Math.floor(b.w / (maxR * 2)));
+      // 4 种小果(目标以下), 用四色网格铺满: (col+2row)%4 保证 8 邻域不同种 -> 稳定不连锁
+      const small = [];
+      for (let t = 0; t <= Math.min(this.cfg.targetTier - 1, 4); t++) small.push(t);
+      while (small.length < 4) small.push(small.length % 2);
+      const four = small.slice(0, 4);
+      this.smalls = four.slice();
+      this.palette = four.slice();
+      const ur = 25;            // 预填充统一半径 -> 紧密铺排不滚动, 四色稳定
+      const cols = Math.max(5, Math.floor(b.w / (ur * 2)));
       const cw = b.w / cols;
-      const sy = maxR * 1.92;
-      const fillH = b.h * 0.6;
-      const rows = Math.max(2, Math.floor(fillH / sy));
+      const sy = ur * 1.96;
+      const fillH = b.h * 0.66;
+      const rows = Math.max(3, Math.floor(fillH / sy));
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          const t = colors[(col + 2 * row) % 4]; // 四色: 上下左右及对角都不同种
-          const r = TIERS[t].r;
-          const x = b.x + cw * (col + 0.5);
-          const y = b.y + b.h - r - row * sy - 2;
-          const body = new Body(clamp(x, b.x + r, b.x + b.w - r), y, r, t);
+          const t = four[(col + 2 * row) % 4];
+          const x = b.x + cw * (col + 0.5) + (Math.random() - 0.5) * cw * 0.12;
+          const y = b.y + b.h - ur - row * sy - 2;
+          const body = new Body(clamp(x, b.x + ur, b.x + b.w - ur), y, ur, t);
           body.scale = 1; body.fresh = 0;
           this.world.add(body);
         }
+      }
+    }
+
+    // 沉降完成后, 把相互接触的同种水果改色, 确保开局没有可立即合成的同种对
+    resolveConflicts() {
+      const list = () => this.world.bodies.filter(o => !o.special && o.type < this.cfg.targetTier);
+      const pal = this.palette || [0, 1, 2, 3];
+      for (let iter = 0; iter < 400; iter++) {
+        let changed = false;
+        const arr = list();
+        for (const a of arr) {
+          const used = new Set();
+          let conflict = false;
+          for (const c of arr) {
+            if (c === a) continue;
+            const dx = c.x - a.x, dy = c.y - a.y, rr = a.r + c.r + 8;
+            if (dx * dx + dy * dy <= rr * rr) { used.add(c.type); if (c.type === a.type) conflict = true; }
+          }
+          if (conflict) {
+            const free = pal.filter(t => !used.has(t));
+            const freeSmall = free.filter(t => t !== this.cfg.targetTier);
+            const pool = freeSmall.length ? freeSmall : (free.length ? free : this.smalls);
+            const nt = pool[Math.floor(Math.random() * pool.length)];
+            a.type = nt; a.r = TIERS[nt].r; changed = true;
+          }
+        }
+        if (!changed) break;
       }
     }
 
@@ -163,7 +193,13 @@
         if (this.dropCD > 0) this.dropCD -= dt;
         if (this.comboTimer > 0) { this.comboTimer -= dt; if (this.comboTimer <= 0) { this.combo = 0; this.comboCur = 0; this.syncCombo(); } }
         this.world.step(dt);
-        this.mergeStep();
+        if (this.mergeEnabled) {
+          this.mergeStep();
+        } else {
+          this.settleT += dt;
+          if (this.settleT >= 0.6 && !this._reSolvedOnce) { this.resolveConflicts(); this._reSolvedOnce = true; }
+          if (this.settleT >= 1.4) { this.resolveConflicts(); this.mergeEnabled = true; }
+        }
         this.updateParticles(dt);
         this.updateBlasts(dt);
         this.checkOverflow(dt);
@@ -173,7 +209,7 @@
 
     // ---------- 投放 ----------
     drop() {
-      if (this.dropCD > 0 || this.ended || !this.running) return;
+      if (this.dropCD > 0 || this.ended || !this.running || !this.mergeEnabled) return;
       const special = this.curSpecial;
       const t = this.cur;
       const r = special ? TIERS[2].r : TIERS[t].r;
@@ -276,13 +312,14 @@
       // 更新 fresh 计时
       for (const o of this.world.bodies) if (o.fresh > 0) o.fresh -= dt;
 
+      const warn = $('#overflow-warn');
       if (over) {
         this.overflowT += dt;
-        $('#overflow-warn').classList.remove('hidden');
+        warn.classList.add('danger');
         if (this.overflowT >= 3) this.fail();
       } else {
         this.overflowT = Math.max(0, this.overflowT - dt * 2);
-        if (this.overflowT <= 0.01) $('#overflow-warn').classList.add('hidden');
+        if (this.overflowT <= 0.01) warn.classList.remove('danger');
       }
     }
 
@@ -385,7 +422,6 @@
     // ---------- 渲染 ----------
     render() {
       ctx.clearRect(0, 0, W, H);
-      this.drawScenery();
       this.drawBox();
       this.drawDangerLine();
       // 水果裁剪在箱体内 (上方留空让落下的水果可见, 下方不溢出前壁)
@@ -431,11 +467,11 @@
     }
 
     drawDangerLine() {
-      const b = this.box, y = b.y + b.h * 0.08;
+      const b = this.box, y = b.y + b.h * 0.1;
       ctx.save();
-      ctx.strokeStyle = this.overflowT > 0.1 ? 'rgba(255,60,60,0.9)' : 'rgba(255,255,255,0.35)';
-      ctx.lineWidth = 2; ctx.setLineDash([8, 8]);
-      ctx.beginPath(); ctx.moveTo(b.x + 6, y); ctx.lineTo(b.x + b.w - 6, y); ctx.stroke();
+      ctx.strokeStyle = 'rgba(230,40,40,0.85)';
+      ctx.lineWidth = 3; ctx.setLineDash([10, 7]);
+      ctx.beginPath(); ctx.moveTo(b.x + 8, y); ctx.lineTo(b.x + b.w - 8, y); ctx.stroke();
       ctx.restore();
     }
 
@@ -507,11 +543,13 @@
 
     // ---------- HUD ----------
     syncHud() {
+      const tgt = this.cfg.targetTier;
       $('#hud-level').textContent = this.cfg.n;
       $('#hud-lives').textContent = state.lives;
       $('#hud-coins').textContent = state.coins.toLocaleString();
-      $('#order-emoji').innerHTML = fruitIcon(this.cfg.targetTier);
-      $('#order-need').textContent = `${this.progress}/${this.cfg.need}`;
+      $('#order-emoji').src = `assets/fruits/${TIERS[tgt].key}.png`;
+      $('#order-name').textContent = TIERS[tgt].name;
+      $('#order-need').textContent = Math.max(0, this.cfg.need - this.progress);
       $('#order-reward').textContent = this.cfg.reward;
       this.syncCombo();
       this.updateToolBadges();

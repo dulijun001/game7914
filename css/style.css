@@ -2,22 +2,27 @@
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   height: 100%;
+  width: 100%;
   overflow: hidden;
+  position: fixed;
   font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
-  background: #2b3a1f;
+  /* 果园背景铺满, 作为 9:16 letterbox 区域延伸 */
+  background: url("../assets/bg/bg_stand.png") center/cover no-repeat, #8fd06a;
   user-select: none;
 }
 .hidden { display: none !important; }
 
 #app {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  max-width: 480px;
-  margin: 0 auto;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  /* 严格 9:16, 居中, 不拉伸 */
+  width: min(100vw, 56.25vh);
+  height: min(177.78vw, 100vh);
   overflow: hidden;
-  /* 游戏内背景 (果园草地) */
-  background: url("../assets/bg/bg_meadow.png") center/cover no-repeat, #8fd06a;
+  /* 游戏内背景 (果园·蓝天·摊位) */
+  background: url("../assets/bg/bg_stand.png") center/cover no-repeat, #8fd06a;
+  box-shadow: 0 0 30px rgba(0,0,0,.4);
 }
 
 #game-canvas { position: absolute; inset: 0; z-index: 1; }
@@ -46,102 +51,115 @@ html, body {
 /* ===== HUD ===== */
 #hud { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 #hud > * { pointer-events: auto; }
-/* 顶部栏: 关卡徽章 + 生命/金币 + 设置 */
+/* 通用图标 */
+.ic { display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; }
+.ic-coin { background-image: url("../assets/ui/ic_coin.png"); }
+.ic-heart { background-image: url("../assets/ui/ic_heart.png"); }
+.ic-plus { background-image: url("../assets/ui/ic_plus.png"); }
+.ic-chest { background-image: url("../assets/ui/ic_chest.png"); }
+
+/* 顶部栏 */
 .hud-top {
   position: absolute; top: 0; left: 0; right: 0;
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 10px;
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 8px;
 }
-.lvl-badge {
-  background: linear-gradient(#fff7e6,#f3d9a3);
-  border: 2px solid #e0b063; border-radius: 12px;
-  padding: 4px 12px; font-weight: 900; color: #8a5a1a; font-size: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+.lvl-plaque {
+  background: linear-gradient(#fcefc9,#f0d493);
+  border: 2px solid #6cae3a; border-radius: 12px;
+  padding: 4px 10px; font-weight: 900; color: #4a7a26; font-size: 15px;
+  box-shadow: 0 3px 4px rgba(0,0,0,.25), inset 0 2px 0 rgba(255,255,255,.6);
+  white-space: nowrap;
 }
-.hud-top .chip { font-size: 13px; }
+.res-bar {
+  position: relative; display: inline-flex; align-items: center; gap: 3px;
+  height: 28px; padding: 0 4px 0 22px;
+  background: linear-gradient(#fff7e6,#f1e0b6);
+  border: 2px solid #e0c073; border-radius: 999px;
+  font-weight: 900; color: #7a5520; font-size: 13px;
+  box-shadow: 0 2px 3px rgba(0,0,0,.2);
+}
+.res-bar .res-ic { position: absolute; left: -6px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; }
+.res-txt { font-size: 10px; color: #b58a4a; font-weight: 800; }
+.res-plus { width: 18px; height: 18px; }
 .gear-btn {
-  margin-left: auto; width: 38px; height: 38px; border: none; cursor: pointer;
+  margin-left: auto; width: 36px; height: 36px; border: none; cursor: pointer; flex: none;
   background: url("../assets/ui/btn_gear.png") center/contain no-repeat;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,.3));
 }
 
 /* 中部: 订单 / 下一个 / 连击奖励 */
 .hud-mid {
-  position: absolute; top: 48px; left: 8px; right: 8px;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;
+  position: absolute; top: 44px; left: 8px; right: 8px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 4px;
 }
-.order-card2 {
-  position: relative; width: 92px;
-  background: linear-gradient(160deg,#fdf4dc,#f0dcad);
-  border: 2px solid #d9b779; border-radius: 10px;
-  padding: 16px 6px 8px; text-align: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,.25), inset 0 0 0 2px rgba(255,255,255,.4);
+/* 订单纸卡 */
+.order-card {
+  position: relative; width: 100px;
+  background: linear-gradient(160deg,#fdf2cf,#ecd398);
+  border: 2px solid #cda85f; border-radius: 8px;
+  padding: 13px 6px 7px; text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,.3);
 }
-/* 便签折角 */
-.order-card2::after {
-  content: ""; position: absolute; right: 0; bottom: 0;
-  border-width: 0 0 16px 16px; border-style: solid;
-  border-color: transparent transparent #e8cf98 transparent;
-  border-bottom-right-radius: 10px;
+.order-card::before { /* 叠纸效果 */
+  content: ""; position: absolute; inset: 0;
+  background: #f2e3b4; border: 2px solid #cda85f; border-radius: 8px;
+  transform: rotate(-5deg); z-index: -1;
 }
-.oc-tab {
-  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-  background: linear-gradient(#7ed957,#4aa83a); color: #fff;
-  font-size: 12px; font-weight: 800; padding: 2px 14px; border-radius: 999px;
-  border: 2px solid #fff; white-space: nowrap;
+.order-tag {
+  position: absolute; top: -8px; left: -6px;
+  background: linear-gradient(#ff6a52,#d8392a); color: #fff;
+  font-size: 12px; font-weight: 900; padding: 2px 10px; border-radius: 6px;
+  box-shadow: 0 2px 3px rgba(0,0,0,.35); transform: rotate(-7deg);
+  text-shadow: 0 1px 1px rgba(0,0,0,.3);
 }
-.oc-fruit { height: 44px; display: flex; align-items: center; justify-content: center; }
-.order-emoji { display: inline-flex; }
-.fruit-ico { width: auto; vertical-align: middle; }
-.oc-fruit .fruit-ico { height: 44px; }
-.oc-x { font-size: 17px; font-weight: 900; color: #5a4a2a; margin-top: 2px; }
-.oc-reward {
-  margin-top: 4px; font-size: 13px; font-weight: 800; color: #d99a1a;
-  display: flex; align-items: center; justify-content: center; gap: 3px;
-}
-.coin-mini, .coin-ic {
-  width: 16px; height: 16px; display: inline-block;
-  background: url("../assets/ui/ic_coin.png") center/contain no-repeat;
-}
+.order-fruit { height: 46px; display: flex; align-items: center; justify-content: center; }
+.order-fruit img { height: 46px; width: auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); }
+.order-line { font-size: 16px; font-weight: 900; color: #5a4226; }
+.order-rw-label { font-size: 10px; color: #9a7a4a; font-weight: 800; margin-top: 3px;
+  border-top: 1px dashed #cda85f; padding-top: 3px; }
+.order-rw { display: flex; align-items: center; justify-content: center; gap: 3px;
+  font-size: 14px; font-weight: 900; color: #d4920f; }
+.order-rw .ic-coin { width: 16px; height: 16px; }
 
-.next-card {
-  position: relative; width: 84px; height: 112px; text-align: center;
-  display: flex; align-items: flex-start; justify-content: center;
-}
-.nc-funnel-img {
-  width: 84px; height: auto; filter: drop-shadow(0 3px 5px rgba(0,0,0,.3));
-}
-.nc-next {
-  position: absolute; top: 38%; left: 50%; transform: translate(-50%,-50%);
-  width: 34px; height: auto;
-}
+/* 下一个 漏斗 */
+.funnel-card { position: relative; width: 86px; display: flex; justify-content: center; flex: none; }
+.funnel-img { width: 86px; height: auto; filter: drop-shadow(0 3px 5px rgba(0,0,0,.35)); }
+.next-fruit { position: absolute; top: 35%; left: 50%; transform: translate(-50%,-50%); width: 36px; height: auto; }
 
+/* 连击奖励 粉卡 */
 .combo-card {
-  width: 92px; text-align: center;
-  background: linear-gradient(#f3d9a8,#e6c285);
-  border: 3px solid #b5854a; border-radius: 12px; padding: 6px 8px;
-  box-shadow: 0 3px 6px rgba(0,0,0,.25), inset 0 1px 2px rgba(255,255,255,.5);
+  position: relative; width: 100px; margin-top: 6px;
+  background: linear-gradient(#ffd2da,#ffb0bf);
+  border: 2px solid #e88aa0; border-radius: 12px; padding: 12px 7px 7px;
+  box-shadow: 0 4px 6px rgba(0,0,0,.3);
 }
-.cc-title { font-size: 11px; font-weight: 800; color: #8a5a1a; }
-.cc-bar {
-  height: 12px; background: #d8c39a; border-radius: 999px; overflow: hidden;
-  margin: 4px 0 2px; box-shadow: inset 0 1px 2px rgba(0,0,0,.25);
+.combo-tag {
+  position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(#a86ad8,#8741bf); color: #fff;
+  font-size: 11px; font-weight: 900; padding: 2px 10px; border-radius: 999px;
+  white-space: nowrap; box-shadow: 0 2px 3px rgba(0,0,0,.3);
 }
-.cc-fill {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg,#ffd24a,#ff8a2b); border-radius: 999px;
-  transition: width .25s;
+.combo-row { display: flex; align-items: center; gap: 4px; }
+.combo-bar {
+  position: relative; flex: 1; height: 16px; background: #6e4a2e;
+  border-radius: 999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,.4);
 }
-.cc-num { font-size: 12px; font-weight: 800; color: #8a6a3a; }
+.combo-fill { height: 100%; width: 0%; background: linear-gradient(#a6ec57,#5fae2e);
+  border-radius: 999px; transition: width .25s; }
+.combo-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.6); }
+.combo-chest { width: 28px; height: 28px; flex: none; }
 
-/* 溢出警告 (美术横幅) */
+/* 溢出警告 (美术横幅, 常驻箱顶) */
 .overflow-warn {
-  position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
-  width: 78%; max-width: 320px; height: 40px;
+  position: absolute; top: 33%; left: 50%; transform: translateX(-50%);
+  width: 82%; max-width: 330px; height: 34px;
   background: url("../assets/scene/warn_banner.png") center/contain no-repeat;
-  animation: warnPulse .8s infinite;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.3));
 }
-@keyframes warnPulse { 50% { transform: translateX(-50%) scale(1.06); } }
+.overflow-warn.danger { animation: warnPulse .6s infinite; }
+@keyframes warnPulse { 50% { transform: translateX(-50%) scale(1.07); } }
 
 /* combo */
 .combo-pop {
