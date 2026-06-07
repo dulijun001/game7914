@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>果趣订单</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ============ 游戏画布 (核心玩法) ============ -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- ============ 游戏内 HUD ============ -->
+    <div id="hud" class="hidden">
+      <div class="hud-top">
+        <div class="hud-left">
+          <div class="chip lvl">关卡 <span id="hud-level">1</span></div>
+          <div class="chip score">分数 <span id="hud-score">0</span></div>
+        </div>
+        <div class="hud-right">
+          <div class="chip lives">❤️ <span id="hud-lives">5</span></div>
+          <div class="chip coins">🪙 <span id="hud-coins">2450</span></div>
+        </div>
+      </div>
+
+      <div class="order-bar">
+        <div class="order-card">
+          <span class="order-title">订单</span>
+          <div class="order-fruit">
+            <span id="order-emoji" class="order-emoji">🍉</span>
+            <span class="order-count">x<span id="order-need">3</span></span>
+          </div>
+        </div>
+        <div class="reward-card">
+          <span class="reward-title">奖励</span>
+          <span class="reward-val">🪙 <span id="order-reward">600</span></span>
+        </div>
+        <div class="timer-card">
+          <span class="timer-title">时间</span>
+          <span class="timer-val" id="hud-timer">01:00</span>
+        </div>
+      </div>
+
+      <div id="combo-pop" class="combo-pop"></div>
+
+      <div class="tools-bar">
+        <button class="tool-btn" data-tool="shuffle">
+          <span class="tool-ico">🔀</span><span class="tool-name">洗牌</span>
+          <span class="tool-badge">3</span>
+        </button>
+        <button class="tool-btn" data-tool="hammer">
+          <span class="tool-ico">🔨</span><span class="tool-name">敲一敲</span>
+          <span class="tool-badge">3</span>
+        </button>
+        <button class="tool-btn" data-tool="magnet">
+          <span class="tool-ico">🧲</span><span class="tool-name">磁铁</span>
+          <span class="tool-badge">1</span>
+        </button>
+      </div>
+      <div id="tool-hint" class="tool-hint hidden">点击一个水果敲碎它</div>
+    </div>
+
+    <!-- ============ 主菜单 ============ -->
+    <div id="screen-menu" class="screen">
+      <div class="menu-bg"></div>
+      <div class="menu-top">
+        <div class="chip lives">❤️ <span class="lives-val">5</span></div>
+        <div class="chip coins">🪙 <span class="coins-val">2450</span></div>
+        <div class="chip gems">💎 120</div>
+      </div>
+      <h1 class="title">果趣订单</h1>
+      <p class="subtitle">轻松合成，完成水果订单</p>
+
+      <div class="menu-order">
+        <span class="menu-order-label">当前订单 · 第 <span class="menu-level">1</span> 关</span>
+        <div class="menu-order-fruit">
+          <span id="menu-order-emoji">🍉</span><span>x<span id="menu-order-need">3</span></span>
+        </div>
+        <span class="menu-order-reward">奖励 🪙 <span id="menu-order-reward-val">600</span></span>
+      </div>
+
+      <button id="btn-start" class="big-btn">开 始 游 戏</button>
+
+      <div class="menu-nav">
+        <div class="nav-item" data-nav="map"><span>🗺️</span><span>关卡</span></div>
+        <div class="nav-item" data-nav="daily"><span>🎁</span><span>每日奖励</span></div>
+        <div class="nav-item" data-nav="checkin"><span>✅</span><span>签到</span></div>
+        <div class="nav-item" data-nav="shop"><span>🛒</span><span>商店</span></div>
+      </div>
+    </div>
+
+    <!-- ============ 关卡地图 ============ -->
+    <div id="screen-map" class="screen hidden">
+      <div class="map-header">
+        <button class="back-btn" data-back="menu">‹ 返回</button>
+        <span class="map-title">果园小镇</span>
+        <div class="chip coins">🪙 <span class="coins-val">2450</span></div>
+      </div>
+      <div id="map-path" class="map-path"></div>
+      <div class="map-footer">
+        <div class="map-cur">
+          <span>关卡 <strong id="map-cur-level">1</strong></span>
+          <span class="map-cur-goal">完成订单，获得金币</span>
+        </div>
+        <button id="btn-map-start" class="big-btn small">开 始 ❤️-1</button>
+      </div>
+    </div>
+
+    <!-- ============ 道具说明 ============ -->
+    <div id="screen-help" class="screen modal hidden">
+      <div class="modal-card">
+        <button class="modal-close" data-close="help">✕</button>
+        <h2 class="modal-title">道具与特殊水果</h2>
+        <ul class="help-list">
+          <li><span class="hi">🌈</span><div><b>彩虹果</b><small>可代替任意水果</small></div></li>
+          <li><span class="hi">💥</span><div><b>星星炸弹</b><small>消除周围一圈水果</small></div></li>
+          <li><span class="hi">🍋</span><div><b>柠檬切片</b><small>横向消除一行</small></div></li>
+          <li><span class="hi">🔀</span><div><b>洗牌</b><small>重新打乱顺序</small></div></li>
+          <li><span class="hi">🔨</span><div><b>敲一敲</b><small>敲碎一个水果</small></div></li>
+          <li><span class="hi">🧲</span><div><b>磁铁</b><small>吸取相同水果</small></div></li>
+        </ul>
+        <button class="big-btn" data-close="help">我知道了</button>
+      </div>
+    </div>
+
+    <!-- ============ 胜利结算 ============ -->
+    <div id="screen-win" class="screen modal hidden">
+      <div class="modal-card win-card">
+        <h2 class="result-title win">订单完成！</h2>
+        <div class="win-order">
+          <span id="win-emoji">🍉</span><span>x<span id="win-need">3</span></span>
+          <span class="win-check">✅</span>
+        </div>
+        <div class="stars" id="win-stars">
+          <span>⭐</span><span>⭐</span><span>⭐</span>
+        </div>
+        <div class="win-score">
+          <span>得分 <strong id="win-score">0</strong></span>
+          <span class="win-combo">连击 x<span id="win-combo">0</span></span>
+        </div>
+        <div class="win-rewards">
+          <div class="rw"><span>🪙</span><small>x<span id="win-coin">600</span></small></div>
+          <div class="rw"><span>🔨</span><small>x1</small></div>
+          <div class="rw"><span>🎁</span><small>x1</small></div>
+        </div>
+        <div class="win-actions">
+          <button class="big-btn ghost" data-act="map">返回地图</button>
+          <button class="big-btn" data-act="next">下一关</button>
+        </div>
+        <button class="text-btn" data-act="replay">再玩一次</button>
+      </div>
+    </div>
+
+    <!-- ============ 失败结算 ============ -->
+    <div id="screen-lose" class="screen modal hidden">
+      <div class="modal-card lose-card">
+        <h2 class="result-title lose">差一点就成功了！</h2>
+        <p class="lose-sub">订单还差 <strong id="lose-left">1</strong> 个</p>
+        <div class="lose-order">
+          <span id="lose-emoji">🍉</span>
+          <span class="lose-prog"><span id="lose-have">2</span>/<span id="lose-need">3</span></span>
+        </div>
+        <button id="btn-revive" class="big-btn revive">
+          💚 复活继续 <small>+5秒 · 💎5</small>
+        </button>
+        <div class="lose-actions">
+          <button class="big-btn ghost" data-act="replay">重新开始</button>
+          <button class="big-btn ghost" data-act="map">返回地图</button>
+        </div>
+        <p class="lose-warn">放弃挑战将损失 300 金币</p>
+      </div>
+    </div>
+
+    <!-- 顶部漂浮分数提示 -->
+    <div id="float-layer"></div>
+  </div>
+
+  <script src="js/physics.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
