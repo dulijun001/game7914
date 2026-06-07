@@ -90,9 +90,14 @@
     }
 
     layout() {
-      const top = H * 0.33, bottom = H * 0.855;
-      const pad = W * 0.055;
-      this.box = { x: pad, y: top, w: W - pad * 2, h: bottom - top };
+      // 宽而浅的果箱 (贴合木箱图比例, 避免拉伸)
+      const pad = W * 0.04;
+      const w = W - pad * 2;
+      const h = w * 0.95;
+      let top = H * 0.30;
+      const maxBottom = H - H * 0.155;
+      if (top + h > maxBottom) top = maxBottom - h;
+      this.box = { x: pad, y: top, w, h };
       if (this.world) this.world.setBounds(this.box);
       this.aimX = this.box.x + this.box.w / 2;
     }
@@ -110,9 +115,39 @@
       this.overflowT = 0; this.dropCD = 0;
       this.aimX = this.box.x + this.box.w / 2;
       this.cur = this.randDrop(); this.nxt = this.randDrop();
+      this.prefill();
       this.syncHud(); this.syncNext();
       this.lastT = performance.now();
       if (!this._raf) this.loop();
+    }
+
+    // 开局预填充: 交错摆放多种水果且留间隙, 相邻不同种 -> 不会开局瞬间连锁,
+    // 既显得箱子有内容, 又保持稳定。
+    prefill() {
+      const b = this.box;
+      // 调色板: 0 .. (targetTier-1), 最多取 4 种小果, 视觉一致
+      const palette = [];
+      for (let t = 0; t <= Math.min(this.cfg.targetTier - 1, 3); t++) palette.push(t);
+      if (palette.length < 2) palette.push(0, 1);
+      const rMax = Math.max(...palette.map(t => TIERS[t].r));
+      const gap = rMax * 2.25;
+      const cols = Math.max(3, Math.floor(b.w / gap));
+      const cw = b.w / cols;
+      const rows = 3;
+      let k = 0;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          // 交错取色, 保证左右、上下邻位不同种
+          const t = palette[(col + row * 2 + k) % palette.length];
+          k++;
+          const r = TIERS[t].r;
+          const x = b.x + cw * col + cw * 0.5 + (row % 2 ? cw * 0.25 : -cw * 0.1);
+          const y = b.y + b.h - r - row * (rMax * 2.1) - 4;
+          const body = new Body(clamp(x, b.x + r, b.x + b.w - r), y, r, t);
+          body.scale = 1; body.fresh = 0;
+          this.world.add(body);
+        }
+      }
     }
 
     randDrop() { return DROP_TIERS[Math.floor(Math.random() * DROP_TIERS.length)]; }
@@ -362,13 +397,15 @@
     drawBox() {
       const b = this.box, crate = IMG['crate'];
       ctx.save();
+      // 深色内壁 (水果落在其中; 也作图未载入时回退)
       const grad = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
-      grad.addColorStop(0, '#7a5436'); grad.addColorStop(1, '#5e3f28');
+      grad.addColorStop(0, '#6b4a30'); grad.addColorStop(1, '#523823');
       ctx.fillStyle = grad;
-      roundRect(ctx, b.x, b.y, b.w, b.h, 20); ctx.fill();
+      roundRect(ctx, b.x, b.y, b.w, b.h, 18); ctx.fill();
       if (crate && crate.complete && crate.naturalWidth) {
-        const pad = b.w * 0.1;
-        ctx.drawImage(crate, b.x - pad, b.y - pad * 0.7, b.w + pad * 2, b.h + pad * 1.5);
+        // 木箱图框在玩法区四周 (壁在外侧, 开口对齐内壁)
+        const wx = b.w * 0.16, wt = b.h * 0.12, wb = b.h * 0.22;
+        ctx.drawImage(crate, b.x - wx, b.y - wt, b.w + wx * 2, b.h + wt + wb);
       }
       ctx.restore();
     }
