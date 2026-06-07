@@ -39,10 +39,11 @@
 
   // ---------- 关卡配置 ----------
   function makeLevel(n) {
-    const targetTier = Math.min(4 + Math.floor((n - 1) / 2), TOP); // L1=橙子(4)起, 逐关升高
-    const need = 3;
+    // 目标更高(需要合成更多次), 随关卡继续升高直到西瓜
+    const targetTier = Math.min(5 + Math.floor((n - 1) / 2), TOP); // L1=桃子(5), L3=苹果, L5=西瓜
+    const need = 3 + Math.floor((n - 1) / 3);                       // 需求数量随关卡增加
     const reward = 400 + n * 50;
-    return { n, targetTier, need, reward, comboGoal: 5 };
+    return { n, targetTier, need, reward, comboGoal: 6 };
   }
 
   // ---------- 全局状态 ----------
@@ -84,7 +85,7 @@
       this.progress = 0; this.score = 0;
       this.combo = 0; this.comboTimer = 0; this.bestCombo = 0; this.comboCur = 0;
       this.particles = []; this.blasts = [];
-      this.tools = { shuffle: 3, hammer: 3, magnet: 3, rainbow: 3 };
+      this.tools = { shuffle: 2, hammer: 2, magnet: 1, rainbow: 1 };
       this.activeTool = null;
       this.cur = 0; this.nxt = 0; this.curSpecial = null;
       this.aimX = 0; this.dropCD = 0; this.overflowT = 0;
@@ -113,7 +114,7 @@
       this.combo = 0; this.bestCombo = 0; this.comboTimer = 0; this.comboCur = 0;
       this.ended = false; this.running = true;
       this.particles = []; this.blasts = [];
-      this.tools = { shuffle: 3, hammer: 3, magnet: 3, rainbow: 3 };
+      this.tools = { shuffle: 2, hammer: 2, magnet: 1, rainbow: 1 };
       this.activeTool = null; this.curSpecial = null;
       this.overflowT = 0; this.dropCD = 0;
       this.aimX = this.box.x + this.box.w / 2;
@@ -316,7 +317,7 @@
       if (over) {
         this.overflowT += dt;
         warn.classList.add('danger');
-        if (this.overflowT >= 3) this.fail();
+        if (this.overflowT >= 1.8) this.fail();
       } else {
         this.overflowT = Math.max(0, this.overflowT - dt * 2);
         if (this.overflowT <= 0.01) warn.classList.remove('danger');
