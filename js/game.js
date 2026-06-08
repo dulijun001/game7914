@@ -643,12 +643,7 @@
   function showGame() { hideAllScreens(); hud.classList.remove('hidden'); }
 
   function refreshMenu() {
-    $$('.coins-val').forEach(e => e.textContent = state.coins.toLocaleString());
-    const cfg = makeLevel(state.level);
-    const lv = $('.menu-level'); if (lv) lv.textContent = state.level;
-    const oe = $('#menu-order-emoji'); if (oe) oe.src = `assets/fruits/${TIERS[cfg.targetTier].key}.png`;
-    $('#menu-order-need').textContent = cfg.need;
-    $('#menu-order-reward-val').textContent = cfg.reward;
+    // 主菜单订单面板严格按原型静态展示 (第12关·西瓜x3·600), 不动态覆盖
   }
 
   function refreshMap() {

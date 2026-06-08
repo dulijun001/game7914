@@ -6,8 +6,8 @@ html, body {
   overflow: hidden;
   position: fixed;
   font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
-  /* 果园背景铺满, 作为 9:16 letterbox 区域延伸 */
-  background: url("../assets/bg/bg_stand.png") center/cover no-repeat, #8fd06a;
+  /* 9:16 以外的留边用中性深色, 避免出现蓝色/场景横条 */
+  background: #1e2a14;
   user-select: none;
 }
 .hidden { display: none !important; }
