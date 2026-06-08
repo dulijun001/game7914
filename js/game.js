@@ -119,6 +119,10 @@
       this.overflowT = 0; this.dropCD = 0;
       this.aimX = this.box.x + this.box.w / 2;
       this.mergeEnabled = false; this.settleT = 0; this._reSolvedOnce = false; // 开局先沉降, 期间不合成
+      // 投放池: 0 .. (目标-2) 的多种小果, 均匀随机
+      this.dropPool = [];
+      for (let t = 0; t <= Math.min(this.cfg.targetTier - 2, 3); t++) this.dropPool.push(t);
+      if (this.dropPool.length < 2) this.dropPool = [0, 1, 2];
       this.cur = this.randDrop(); this.nxt = this.randDrop();
       this.prefill();
       this.syncHud(); this.syncNext();
@@ -181,7 +185,11 @@
       }
     }
 
-    randDrop() { return DROP_TIERS[Math.floor(Math.random() * DROP_TIERS.length)]; }
+    randDrop() {
+      // 均匀随机于投放池(开局根据目标等级确定的多种小果)
+      const pool = this.dropPool && this.dropPool.length ? this.dropPool : [0, 1, 2];
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
 
     // ---------- 主循环 ----------
     loop() {
