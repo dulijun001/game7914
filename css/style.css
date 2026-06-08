@@ -256,7 +256,7 @@ html, body {
 }
 
 /* 当前订单 (右上) */
-.menu-order { position: absolute; top: 30%; right: 4%; width: 37%; max-width: 170px; z-index: 2; }
+.menu-order { position: absolute; top: 29%; right: 4%; width: 40%; max-width: 184px; z-index: 2; }
 .menu-order-bg { width: 100%; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,.3)); }
 .menu-order-content {
   position: absolute; left: 8%; right: 8%; top: 42%; bottom: 8%;
@@ -271,7 +271,7 @@ html, body {
 
 /* 吉祥物 (左) */
 .menu-girl {
-  position: absolute; left: -4%; top: 31%; width: 46%; max-width: 215px;
+  position: absolute; left: -5%; top: 29%; width: 50%; max-width: 235px;
   filter: drop-shadow(0 6px 8px rgba(0,0,0,.35)); pointer-events: none; z-index: 1;
 }
 
