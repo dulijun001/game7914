@@ -643,11 +643,10 @@
   function showGame() { hideAllScreens(); hud.classList.remove('hidden'); }
 
   function refreshMenu() {
-    $$('.lives-val').forEach(e => e.textContent = state.lives);
     $$('.coins-val').forEach(e => e.textContent = state.coins.toLocaleString());
     const cfg = makeLevel(state.level);
-    $('.menu-level').textContent = state.level;
-    $('#menu-order-emoji').innerHTML = fruitIcon(cfg.targetTier);
+    const lv = $('.menu-level'); if (lv) lv.textContent = state.level;
+    const oe = $('#menu-order-emoji'); if (oe) oe.src = `assets/fruits/${TIERS[cfg.targetTier].key}.png`;
     $('#menu-order-need').textContent = cfg.need;
     $('#menu-order-reward-val').textContent = cfg.reward;
   }
@@ -680,12 +679,16 @@
   // ---------- 事件绑定 ----------
   function bindEvents() {
     $('#btn-start').addEventListener('click', () => launchLevel(state.level));
-    $$('.nav-item').forEach(it => it.addEventListener('click', () => {
+    $$('.nav-item, .mid-panel').forEach(it => it.addEventListener('click', () => {
       const nav = it.dataset.nav;
       if (nav === 'map') showScreen('map');
-      else if (nav === 'shop') alert('商店开发中 🛒');
       else if (nav === 'daily') { state.coins += 200; refreshMenu(); alert('领取每日奖励 +200 🪙'); }
       else if (nav === 'checkin') alert('今日已签到 ✅');
+      else if (nav === 'activity') alert('活动中心开发中 🎉');
+      else if (nav === 'shop') alert('商店开发中 🛒');
+      else if (nav === 'collect') alert('图鉴开发中 📖');
+      else if (nav === 'task') alert('任务开发中 ✅');
+      else if (nav === 'rank') alert('排行榜开发中 🏆');
     }));
     $('#btn-map-start').addEventListener('click', () => launchLevel(state.level));
     $$('[data-back]').forEach(b => b.addEventListener('click', () => showScreen(b.dataset.back)));

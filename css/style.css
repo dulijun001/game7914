@@ -239,45 +239,76 @@ html, body {
   backdrop-filter: blur(2px);
 }
 
-/* ===== 主菜单 ===== */
+/* ===== 主菜单 (按原型美术) ===== */
 #screen-menu {
-  padding: 14px; justify-content: flex-start;
-  background: url("../assets/bg/bg_stand.png") center/cover no-repeat, #8fd06a;
+  padding: 0; justify-content: flex-start; align-items: center; overflow: hidden;
+  background: url("../assets/menu/bg.png") center/cover no-repeat, #8fd06a;
 }
-/* 主菜单吉祥物 */
+.menu-top {
+  width: 100%; display: flex; align-items: center; gap: 4px; padding: 8px 8px 0;
+}
+.m-chip { height: 32px; width: auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
+.m-gear { height: 40px; width: auto; margin-left: auto; cursor: pointer; filter: drop-shadow(0 2px 3px rgba(0,0,0,.3)); }
+
+.menu-logo {
+  width: 80%; max-width: 370px; margin-top: 6px; z-index: 1;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.3));
+}
+
+/* 当前订单 (右上) */
+.menu-order { position: absolute; top: 30%; right: 4%; width: 37%; max-width: 170px; z-index: 2; }
+.menu-order-bg { width: 100%; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,.3)); }
+.menu-order-content {
+  position: absolute; left: 8%; right: 8%; top: 42%; bottom: 8%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.menu-order-fruit { display: flex; align-items: center; gap: 3px; }
+.menu-order-fruit img { height: 42px; }
+.mo-x { font-size: 20px; font-weight: 900; color: #5a4226; }
+.menu-order-rw { display: flex; align-items: center; gap: 3px; font-size: 14px; font-weight: 900; color: #d4920f; }
+.menu-order-rw .ic-coin { width: 16px; height: 16px; }
+.menu-level-tag { position: absolute; top: 24%; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 900; color: #4a7a26; white-space: nowrap; }
+
+/* 吉祥物 (左) */
 .menu-girl {
-  position: absolute; left: -10px; bottom: 96px;
-  width: 38%; max-width: 180px;
-  filter: drop-shadow(0 6px 8px rgba(0,0,0,.3));
-  pointer-events: none;
+  position: absolute; left: -4%; top: 31%; width: 46%; max-width: 215px;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,.35)); pointer-events: none; z-index: 1;
 }
+
+/* 开始游戏 */
+.menu-start-wrap { position: absolute; top: 50%; left: 0; right: 0; display: flex; justify-content: center; z-index: 3; }
+.menu-shelf { position: absolute; top: 40%; width: 70%; max-width: 320px; }
+.menu-start-btn {
+  position: relative; z-index: 1; width: 60%; max-width: 260px; aspect-ratio: 300/104;
+  border: none; cursor: pointer; background: url("../assets/menu/btn_start.png") center/contain no-repeat;
+  filter: drop-shadow(0 5px 6px rgba(0,0,0,.35));
+}
+.menu-start-btn:active { transform: translateY(3px); }
+
+/* 四个功能面板 */
+.menu-mid {
+  position: absolute; bottom: 96px; left: 6px; right: 6px;
+  display: flex; justify-content: space-around; align-items: flex-end; z-index: 2;
+}
+.mid-panel { border: none; background: none; cursor: pointer; padding: 0; }
+.mid-panel img { height: 92px; width: auto; display: block; filter: drop-shadow(0 3px 4px rgba(0,0,0,.25)); }
+.mid-panel:active { transform: translateY(2px); }
+
+/* 底部导航 */
+.menu-nav {
+  position: absolute; bottom: 10px; left: 8px; right: 8px;
+  display: flex; justify-content: space-around; align-items: flex-end; z-index: 2;
+}
+.menu-nav .nav-item { border: none; background: none; cursor: pointer; padding: 0; }
+.menu-nav .nav-item img { height: 78px; width: auto; display: block; filter: drop-shadow(0 3px 4px rgba(0,0,0,.25)); }
+.menu-nav .nav-item:active { transform: translateY(2px); }
+
 /* 结算弹窗吉祥物 */
 .result-girl {
   position: absolute; right: -14px; bottom: 8px;
   width: 92px; pointer-events: none;
   filter: drop-shadow(0 4px 6px rgba(0,0,0,.3));
 }
-.menu-top { width: 100%; display: flex; gap: 8px; justify-content: flex-start; }
-.title {
-  margin-top: 26px; font-size: 52px; font-weight: 900;
-  color: #ff7a1a;
-  text-shadow: 0 3px 0 #fff, 0 5px 0 #c95a0a, 0 8px 10px rgba(0,0,0,.3);
-  letter-spacing: 2px;
-}
-.subtitle {
-  margin-top: 8px; font-size: 15px; font-weight: 700; color: #5a7a3a;
-  background: rgba(255,255,255,.6); padding: 4px 14px; border-radius: 999px;
-}
-.menu-order {
-  margin-top: 30px; background: rgba(255,255,255,.9);
-  border-radius: 18px; padding: 14px 26px;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  box-shadow: 0 4px 8px rgba(0,0,0,.18);
-  border: 3px solid #e8c98a;
-}
-.menu-order-label { font-size: 13px; color: #9a8b6a; font-weight: 700; }
-.menu-order-fruit { font-size: 40px; font-weight: 900; color: #4a8a3a; display:flex; align-items:center; gap:4px;}
-.menu-order-reward { font-size: 14px; color: #d99a1a; font-weight: 800; }
 
 .big-btn {
   margin-top: 30px; border: none; cursor: pointer;
@@ -289,37 +320,13 @@ html, body {
 }
 .big-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #2f7a26; }
 .big-btn.small { font-size: 18px; padding: 12px 30px; margin-top: 0; }
-/* 主菜单开始按钮用美术图 */
-#btn-start {
-  margin-top: 26px; width: 250px; height: 82px; padding: 0;
-  background: url("../assets/ui/btn_start.png") center/contain no-repeat;
-  box-shadow: none; color: transparent; font-size: 0;
-  filter: drop-shadow(0 5px 6px rgba(0,0,0,.3));
-}
-#btn-start:active { transform: translateY(4px); box-shadow: none; }
 .big-btn.ghost {
   background: linear-gradient(#fff,#f0e6d0); color: #8a6a3a;
   box-shadow: 0 4px 0 #d9b878, 0 6px 10px rgba(0,0,0,.2);
 }
-.big-btn.revive {
-  background: linear-gradient(#7ed957,#3a9a3a);
-  font-size: 20px;
-}
+.big-btn.revive { background: linear-gradient(#7ed957,#3a9a3a); font-size: 20px; }
 .big-btn.revive small { font-size: 12px; opacity: .9; }
 .text-btn { margin-top: 14px; background: none; border: none; color: #fff; font-size: 14px; text-decoration: underline; cursor: pointer; }
-
-.menu-nav {
-  position: absolute; bottom: 24px; left: 14px; right: 14px;
-  display: flex; justify-content: space-around;
-  background: rgba(255,255,255,.92); border-radius: 18px; padding: 12px 6px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.2);
-}
-.nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 12px; font-weight: 700; color: #7a6a4a; cursor: pointer;
-}
-.nav-item span:first-child { font-size: 26px; }
-.nav-item:active { transform: scale(.9); }
 
 /* ===== 地图 ===== */
 #screen-map {
